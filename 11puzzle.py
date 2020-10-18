@@ -30,9 +30,28 @@ def createStates(filepath):
     # print(goalS)
     return initialS, goalS
 
+def printOutput(initialS, goalS):
+    with open("Test_Output.txt", "w") as fp:
+        #printing out initial state
+        for row in initialS:
+            for char in row:
+                fp.write(str(char) + " ")
+            fp.write("\n")
+        fp.write("\n")
+        #printing out goal state
+        for row in goalS:
+            for char in row:
+                fp.write(str(char) +  " ")
+            fp.write("\n")
+        fp.write("\n")
+
+
+
+
 
 def main():
     initialS, goalS = createStates("Sample_Input.txt")
+    printOutput(initialS, goalS)
 
 if __name__ == "__main__":
     main()
