@@ -110,26 +110,36 @@ def createStates(filepath): #create 2D matrices for initial state and goal state
     #cleaning up any extra rows, probably a better way of making sure we just don't have to do this
     initialS = initialS[:3]
     goalS = goalS[:3]
+    print("Reading states from", filepath)
     return initialS, goalS
 
 
 def printOutput(initialS, goalS, goalNode, numNodes): #print final output to file
-    with open("Output3.txt", "w") as fp:
-        #printing out initial state
-        for row in initialS:
-            for char in row:
-                fp.write(str(char) + " ")
-            fp.write("\n")
-        fp.write("\n")
-        #printing out goal state
-        for row in goalS:
-            for char in row:
-                fp.write(str(char) +  " ")
-            fp.write("\n")
-        fp.write("\n" + str(goalNode.depth) + "\n")     #depth
-        fp.write(str(numNodes) + "\n")                  #N              
-        fp.write(goalNode.solnpath + "\n")              #Solution Path
-        fp.write(goalNode.flist)                        #list of f(n) values 
+        printed = False
+        while not printed:
+            filepath = input("Enter output file name: ")
+            try:
+                with open(filepath, "w") as fp:
+                    #printing out initial state
+                    for row in initialS:
+                        for char in row:
+                            fp.write(str(char) + " ")
+                        fp.write("\n")
+                    fp.write("\n")
+                    #printing out goal state
+                    for row in goalS:
+                        for char in row:
+                            fp.write(str(char) +  " ")
+                        fp.write("\n")
+                    fp.write("\n" + str(goalNode.depth) + "\n")     #depth
+                    fp.write(str(numNodes) + "\n")                  #N              
+                    fp.write(goalNode.solnpath + "\n")              #Solution Path
+                    fp.write(goalNode.flist)                        #list of f(n) values
+            except:
+                print("An error occured, please try again")
+            else:
+                print("Output printed to", filepath)
+                printed = True
         
 
 def solve(initialS, goalS): #actually running A*
@@ -150,9 +160,19 @@ def solve(initialS, goalS): #actually running A*
     
     printOutput(initialS, goalS, goalNode, len(expanded) + len(expandable)) #print output to file
 
-def main():  
-    initialS, goalS = createStates("Input3.txt") #read in initial and goal states from starting node
-    solve(initialS, goalS) #run fun algorithm
+def main(): 
+    filepath = ""
+    while True:
+        filepath = input("Enter filepath for input file. Enter EXIT to end code: ")
+        if filepath == "EXIT":
+            print("Goodbye :)")
+            break
+        try:   
+            initialS, goalS = createStates(filepath) #read in initial and goal states from starting node
+        except:
+            print("Incorrect filepath")
+        else:
+            solve(initialS, goalS) #run fun algorithm
         
 
 if __name__ == "__main__":
