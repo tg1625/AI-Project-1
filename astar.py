@@ -4,19 +4,14 @@ from copy import deepcopy
 width = 4
 height = 3
 
-
-
 class Node:
         def __init__(self, state, goal, depth, solnpath, flist):
                 self.state = state                              #2-d matrix of puzzle position
-        
                 self.hn = sumManhattans(self.state, goal)       #stored to check if this is goal node
-                self.depth = depth #keeps track of depth in tree
-
-                self.fn = self.hn + self.depth #keeps track of total f(n)
-
-                self.solnpath = solnpath #keeps track of current solution path
-                self.flist = flist + str(self.fn) + " " #keeps track of list of fvalues of nodes generated in trees
+                self.depth = depth                              #keeps track of depth in tree
+                self.fn = self.hn + self.depth                  #keeps track of total f(n)
+                self.solnpath = solnpath                        #keeps track of current solution path
+                self.flist = flist + str(self.fn) + " "         #keeps track of list of fvalues of nodes generated in trees
 
         def __str__(self):
                 return "(" + (str)(self.state) + ", f(n) = " + (str)(self.fn) + ", solution path = " + self.solnpath + ", f-list = " + self.flist + ")"
@@ -24,8 +19,61 @@ class Node:
         def __repr__(self):
                 return (str)(self)
 
-        def __lt__(self, other):
+        def __lt__(self, other): #allows for comparison of two nodes to use in the min heap
                 return self.fn < other.fn
+
+def sumManhattans(state1, state2): #get manhattan distance for two states 
+    dists = 0
+    for y in range(height):
+        for x in range(width):
+            if state1[y][x] != state2[y][x] and state1[y][x] != 0:
+                dists += 1
+    return dists
+
+def findzero(state): #find coordinates of the blank tile
+        for y in range(height):
+                for x in range(width):
+                        if(state[y][x] == 0):
+                                return y, x
+
+def expand(nodeo, goal, expanded, expandable): #create 4 children of the node and push them into the expandable list
+        if(nodeo.hn == 0): # check if goal has been reached
+                return True, nodeo
+        
+        zeroy, zerox = findzero(nodeo.state) #find location of zero 
+        
+        #Check moving left
+        if(zerox > 0):
+                lstate = deepcopy(nodeo.state)
+                lstate[zeroy][zerox], lstate[zeroy][zerox-1] = lstate[zeroy][zerox-1], lstate[zeroy][zerox]
+                #if not already in list with lower f(n) value
+                if lstate not in expanded: #create node and push into heap
+                        lnode = Node(lstate, goal, nodeo.depth + 1, nodeo.solnpath + "L ", nodeo.flist)                
+                        heapq.heappush(expandable,lnode)
+        #Same procedures for the other actions (right, up, and down)
+        #check moving right
+        if (zerox < width - 1):
+                rstate = deepcopy(nodeo.state)
+                rstate[zeroy][zerox], rstate[zeroy][zerox+1] = rstate[zeroy][zerox+1], rstate[zeroy][zerox]
+                if rstate not in expanded:
+                        rnode = Node(rstate, goal, nodeo.depth + 1, nodeo.solnpath + "R ", nodeo.flist)
+                        heapq.heappush(expandable,rnode)
+        #check moving up
+        if (zeroy > 0):
+                ustate = deepcopy(nodeo.state)
+                ustate[zeroy][zerox], ustate[zeroy - 1][zerox] = ustate[zeroy - 1][zerox], ustate[zeroy][zerox]
+                if ustate not in expanded:
+                        unode = Node(ustate, goal, nodeo.depth + 1, nodeo.solnpath + "U ", nodeo.flist)
+                        heapq.heappush(expandable,unode)
+        #check moving down
+        if (zeroy < height - 1): 
+                dstate = deepcopy(nodeo.state) 
+                dstate[zeroy][zerox], dstate[zeroy + 1][zerox] = dstate[zeroy + 1][zerox], dstate[zeroy][zerox]
+                if dstate not in expanded:
+                        dnode = Node(dstate, goal, nodeo.depth + 1, nodeo.solnpath + "D ", nodeo.flist)
+                        heapq.heappush(expandable, dnode)
+
+        return False, None
 
 
 def createStates(filepath): #create 2D matrices for initial state and goal state from file
@@ -56,68 +104,10 @@ def createStates(filepath): #create 2D matrices for initial state and goal state
     #cleaning up any extra rows, probably a better way of making sure we just don't have to do this
     initialS = initialS[:3]
     goalS = goalS[:3]
-    # print(initialS)
-    # print(goalS)
     return initialS, goalS
 
-def expand(nodeo, goal, expanded, expandable): #create 4 children of the node and push them into the expandable list
-        if(nodeo.hn == 0): # check if goal has been reached
-                return expandable, True, nodeo
-        
-        
-        zeroy, zerox = findzero(nodeo.state) #find location of zero
 
-        rstate = deepcopy(nodeo.state)
-        lstate = deepcopy(nodeo.state)
-        ustate = deepcopy(nodeo.state)
-        dstate = deepcopy(nodeo.state) 
-
-        print(zeroy, zerox)
-
-        if(zerox > 0):
-                print("left") #make left state
-                lstate[zeroy][zerox], lstate[zeroy][zerox-1] = lstate[zeroy][zerox-1], lstate[zeroy][zerox]
-
-
-                #if not already in list with lower f(n) value
-                if lstate not in expanded:
-                        print(lstate)
-                        lnode = Node(lstate, goal, nodeo.depth + 1, nodeo.solnpath + "L ", nodeo.flist)                #create node and push into stack
-                        heapq.heappush(expandable,lnode)
-
-        #do the same for the other three
-        if (zerox < width - 1):
-                print("right") #make right
-                rstate[zeroy][zerox], rstate[zeroy][zerox+1] = rstate[zeroy][zerox+1], rstate[zeroy][zerox]
-                if rstate not in expanded:
-                        print(rstate)
-                        rnode = Node(rstate, goal, nodeo.depth + 1, nodeo.solnpath + "R ", nodeo.flist)
-                        heapq.heappush(expandable,rnode)
-        if (zeroy > 0):
-                print("up") #make up
-                ustate[zeroy][zerox], ustate[zeroy - 1][zerox] = ustate[zeroy - 1][zerox], ustate[zeroy][zerox]
-                if ustate not in expanded:
-                        print(ustate)
-                        unode = Node(ustate, goal, nodeo.depth + 1, nodeo.solnpath + "U ", nodeo.flist)
-                        heapq.heappush(expandable,unode)
-        if (zeroy < height - 1): #down
-                print("down")
-                dstate[zeroy][zerox], dstate[zeroy + 1][zerox] = dstate[zeroy + 1][zerox], dstate[zeroy][zerox]
-                if dstate not in expanded:
-                        print(dstate)
-                        dnode = Node(dstate, goal, nodeo.depth + 1, nodeo.solnpath + "D ", nodeo.flist)
-                        heapq.heappush(expandable, dnode)
-
-        return expandable, False, None
-
-
-def findzero(state): #find location of zero
-        for y in range(height):
-                for x in range(width):
-                        if(state[y][x] == 0):
-                                return y, x
-
-def printOutput(initialS, goalS): #print final output
+def printOutput(initialS, goalS, goalNode, numNodes): #print final output to file
     with open("Test_Output.txt", "w") as fp:
         #printing out initial state
         for row in initialS:
@@ -130,44 +120,34 @@ def printOutput(initialS, goalS): #print final output
             for char in row:
                 fp.write(str(char) +  " ")
             fp.write("\n")
-        fp.write("\n")
-
-def sumManhattans(state1, state2):
-    dists = 0
-    for y in range(height):
-        for x in range(width):
-            if state1[y][x] != state2[y][x] and state1[y][x] != 0:
-                dists += 1
-    return dists
-
-def main():
-        goalReached = False
-        goalNode = None
-
+        fp.write("\n" + str(goalNode.depth) + "\n")     #depth
+        fp.write(str(numNodes) + "\n")                  #N              
+        fp.write(goalNode.solnpath + "\n")              #Solution Path
+        fp.write(goalNode.flist)                        #list of f(n) values 
         
-        initialS, goalS = createStates("Sample_Input.txt") #read in initial and goal states from starting node
-    
-        expandable = []
-        expanded = [] #initialize graphs of expandable nodes and already-expanded nodes
 
-        firstnode = Node(initialS, goalS, 0, "", "") #initialize node
+def solve(initialS, goalS):
+        goalReached = False #are we at the goal
+        goalNode = None #will hold the goal node if we find one
         
-        heapq.heappush(expandable,firstnode)#uses a min heap to get nodes with min f(n) value
+        expandable = [] #min-heap used to keep track of expandable nodes
+        expanded = [] #list of nodes that have already been expanded, used for graph-search
 
-
-        while expandable and not goalReached: #while there are expandable nodes list isn't empty:
+        root = Node(initialS, goalS, 0, "", "") #initialize root node
+        
+        heapq.heappush(expandable,root) #add root to the min-heap
+        
+        while expandable and not goalReached: #while there are expandable nodes (heap isn't empty) and we haven't gotten a goal:
                 currnode = heapq.heappop(expandable) #expand node with least cost (uses min-heap)
-                print("expanding " + str(currnode.state))
-                expandable, goalReached, goalNode = expand(currnode, goalS, expanded, expandable) #push each child generated into expandable nodes list, along with its h(n) value and its current solution path and its cumulative f(n)s
-                expanded.append(currnode.state)
+                goalReached, goalNode = expand(currnode, goalS, expanded, expandable) #expand the current node. Will return Boolean for if goal was found, as well as the goal node
+                expanded.append(currnode.state) #add current node to list of expanded nodes
+        
+        printOutput(initialS, goalS, goalNode, len(expanded) + len(expandable)) #print output to file
 
-                print(expandable)
-        #nodes are only created when we choose that state to be expanded
-
-        print(len(expanded))
-        print(expanded)
-        print("goal node: " + str(goalNode))
-        printOutput(initialS, goalS)
+def main():  
+        initialS, goalS = createStates("Sample_Input.txt") #read in initial and goal states from starting node
+        solve(initialS, goalS) #run fun algorithm
+        
 
 if __name__ == "__main__":
         main()
