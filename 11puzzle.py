@@ -99,7 +99,7 @@ def createStates(filepath): #create 2D matrices for initial state and goal state
                 if (char != ''): #add any found numbers 
                     addingM[row].append(int(char))
                     char = ''
-                if row == 3: #switch to adding to goal state matrix
+                if row == height: #switch to adding to goal state matrix
                     addingM = goalS
                     row = 0
                 else:
@@ -108,8 +108,8 @@ def createStates(filepath): #create 2D matrices for initial state and goal state
         if char != '':
             addingM[row].append(int(char)) #getting last character we may have missed
     #cleaning up any extra rows, probably a better way of making sure we just don't have to do this
-    initialS = initialS[:3]
-    goalS = goalS[:3]
+    initialS = initialS[:height]
+    goalS = goalS[:height]
     print("Reading states from", filepath)
     return initialS, goalS
 
