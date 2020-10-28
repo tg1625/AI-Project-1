@@ -17,10 +17,10 @@ class Node:
         self.depth = depth                              #keeps track of depth in tree
         self.fn = self.hn + self.depth                  #keeps track of total f(n)
         self.solnpath = solnpath                        #keeps track of current solution path
-        self.flist = flist + str(self.fn) + " "         #keeps track of list of fvalues of nodes generated in trees
+        self.flist = flist + str(self.fn) + " "         #keeps track of list of fvalues of nodes in solution path
 
     def __str__(self):
-        return "(" + (str)(self.state) + ", f(n) = " + (str)(self.fn) + ", solution path = " + self.solnpath + ", f-list = " + self.flist + ")"
+        return "(" + (str)(self.state) + ", f(n) = " + (str)(self.fn) + ", solution path = " + self.solnpath + ", f-list = " + self.flist + ")" #print fxn for debugging purposes
 
     def __repr__(self):
         return (str)(self)
@@ -136,7 +136,7 @@ def printOutput(initialS, goalS, goalNode, numNodes): #print final output to fil
                     fp.write(goalNode.solnpath + "\n")              #Solution Path
                     fp.write(goalNode.flist)                        #list of f(n) values
             except:
-                print("An error occured, please try again")
+                print("An error occurred, please try again")
             else:
                 print("Output printed to", filepath)
                 printed = True
